@@ -3,19 +3,19 @@ from src.ingestion.embedder import get_embedder, embed_texts
 
 COLLECTION_NAME = "ragwatch_demo"
 
-def search(query: str, top_k: int = 5):
-    client = get_qdrant_client()
-    model = get_embedder()
+def search(query: str, client=None, model=None, top_k: int = 5):
+    if client is None:
+        client = get_qdrant_client()
+    if model is None:
+        model = get_embedder()
 
     query_vector = embed_texts(model, [query])[0]
-    # This returns a list of vectors, we take the first one since we only have one query
 
     results = client.search(
         collection_name=COLLECTION_NAME,
         query_vector=query_vector.tolist(),
-        limit=top_k
+        limit=top_k,
     )
-
     return results
 
 
