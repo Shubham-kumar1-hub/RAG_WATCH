@@ -4,11 +4,10 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from  ragas import EvaluationDataset, evaluate
+from ragas import EvaluationDataset, evaluate
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.metrics import Faithfulness, ResponseRelevancy
-
 
 from src.generation.pipeline import rag_query
 
@@ -18,7 +17,7 @@ def get_ragas_llm():
     groq_llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"), temperature=0)
     return LangchainLLMWrapper(groq_llm)
 
-def get_ragas_embedings():
+def get_ragas_embeddings():
     hf_embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
     return LangchainEmbeddingsWrapper(hf_embeddings)
 
@@ -30,23 +29,35 @@ EVAL_QUESTIONS = [
 
 if __name__ == "__main__":
     rows = []
-    for questions in EVAL_QUESTIONS:
-        answer, results = rag_query(questions)
+    for question in EVAL_QUESTIONS:
+        answer, results = rag_query(question)
         contexts = [hit.payload["text"] for hit in results]
         rows.append({
-            "user_input": questions,
+            "user_input": question,
             "response": answer,
-            "retrieved_contexts": contexts
+            "retrieved_contexts": contexts,
         })
 
-        dataset = EvaluationDataset.from_list(rows)
+    dataset = EvaluationDataset.from_list(rows)
 
-        result = evaluate(
-            dataset=dataset,
-            metrics=[Faithfulness(), ResponseRelevancy()],
-            llm=get_ragas_llm(),
-            embeddings=get_ragas_embedings()
-        )
+    result = evaluate(
+        dataset=dataset,
+        metrics=[Faithfulness(), ResponseRelevancy()],
+        llm=get_ragas_llm(),
+        embeddings=get_ragas_embeddings(),
+    )
 
-        print(result)
-        print(result.to_pandas())
+    print(result)
+    print(result.to_pandas().to_string())
+
+    # print("\nOverall Scores:")
+    # print(result)
+
+    # df = result.to_pandas()
+
+    # print("\nDetailed Results:")
+    # print(
+    #     df[
+    #         ["user_input", "faithfulness", "answer_relevancy"]
+    #     ].to_string(index=False)
+    # )
