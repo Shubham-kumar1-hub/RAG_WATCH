@@ -1,0 +1,52 @@
+import os
+from dotenv import load_dotenv
+
+from langchain_groq import ChatGroq
+from langchain_huggingface import HuggingFaceEmbeddings
+
+from  ragas import EvaluationDataset, evaluate
+from ragas.llms import LangchainLLMWrapper
+from ragas.embeddings import LangchainEmbeddingsWrapper
+from ragas.metrics import Faithfulness, ResponseRelevancy
+
+
+from src.generation.pipeline import rag_query
+
+load_dotenv()
+
+def get_ragas_llm():
+    groq_llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"), temperature=0)
+    return LangchainLLMWrapper(groq_llm)
+
+def get_ragas_embedings():
+    hf_embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+    return LangchainEmbeddingsWrapper(hf_embeddings)
+
+EVAL_QUESTIONS = [
+    "What is the attention mechanism in transformers?",
+    "What replaces recurrence in the Transformer architecture?",
+    "How many attention heads does the Transformer use?",
+]
+
+if __name__ == "__main__":
+    rows = []
+    for questions in EVAL_QUESTIONS:
+        answer, results = rag_query(questions)
+        contexts = [hit.payload["text"] for hit in results]
+        rows.append({
+            "user_input": questions,
+            "response": answer,
+            "retrieved_contexts": contexts
+        })
+
+        dataset = EvaluationDataset.from_list(rows)
+
+        result = evaluate(
+            dataset=dataset,
+            metrics=[Faithfulness(), ResponseRelevancy()],
+            llm=get_ragas_llm(),
+            embeddings=get_ragas_embedings()
+        )
+
+        print(result)
+        print(result.to_pandas())
