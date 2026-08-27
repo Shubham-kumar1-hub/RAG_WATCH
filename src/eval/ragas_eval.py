@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from ragas import EvaluationDataset, evaluate
 from ragas.llms import LangchainLLMWrapper
@@ -14,8 +15,12 @@ from src.generation.pipeline import rag_query
 load_dotenv()
 
 def get_ragas_llm():
-    groq_llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"), temperature=0)
-    return LangchainLLMWrapper(groq_llm)
+    gemini_llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        temperature=0,
+    )
+    return LangchainLLMWrapper(gemini_llm)
 
 def get_ragas_embeddings():
     hf_embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
