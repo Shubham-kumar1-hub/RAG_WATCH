@@ -1,5 +1,13 @@
 # this ties retrieval and generation into one callable RAG function
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "false")
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY", "")
+os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT", "ragwatch")
 
 from src.retrieval.qdrant_db import get_qdrant_client
 from src.ingestion.embedder import get_embedder
