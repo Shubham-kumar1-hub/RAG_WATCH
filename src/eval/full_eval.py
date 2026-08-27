@@ -41,7 +41,7 @@ if __name__ == "__main__":
         ],
         llm = get_ragas_llm(),
         embeddings = get_ragas_embeddings(),
-        run_config=RunConfig(max_workers=2, timeout=180, max_retries=3),
+        run_config=RunConfig(max_workers=1, timeout=300, max_retries=5),
     )
 
     print(result)
