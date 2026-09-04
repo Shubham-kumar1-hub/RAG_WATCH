@@ -40,11 +40,11 @@ if __name__ == "__main__":
     baseline_df = pd.read_csv(processed_dir / "eval_results_baseline.csv")
 
     print("Running fresh eval against current pipeline...")
-    new_df = run_full(golden_df)
+    new_df = run_full(golden_df, top_k=8)
 
     report = check_regressions(baseline_df, new_df)
 
-    print("\n=== Regression Report ===")
+    print("\n--- Regression Report ---")
     print(report.to_string())
 
     n_regressed = report["regressed"].sum()

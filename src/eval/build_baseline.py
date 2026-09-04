@@ -9,10 +9,10 @@ from src.eval.ragas_eval import get_ragas_llm, get_ragas_embeddings
 
 RUN_CONFIG = RunConfig(max_workers=1, timeout=300, max_retries=5)
 
-def build_rows(golden_df):
+def build_rows(golden_df, top_k=5):
     rows = []
     for _, row in golden_df.iterrows():
-        answer, results = rag_query(row["user_input"])
+        answer, results = rag_query(row["user_input"], top_k=top_k)
         contexts = [hit.payload["text"] for hit in results]
         rows.append({
             "user_input": row["user_input"],
@@ -33,8 +33,8 @@ def run_stochastic_only(golden_df):
     )
     return result.to_pandas()
 
-def run_full(golden_df):
-    dataset = build_rows(golden_df)
+def run_full(golden_df, top_k=5):
+    dataset = build_rows(golden_df, top_k=top_k)
     result = evaluate(
         dataset=dataset,
         metrics=[Faithfulness(), ResponseRelevancy(), LLMContextPrecisionWithReference(), LLMContextRecall()],
