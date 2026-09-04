@@ -17,9 +17,14 @@ def check_regressions(baseline_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.Dat
             baseline_mean = row[f"{metric}_mean"]
             baseline_std = row[f"{metric}_std"]
 
-            tolerance = max(STD_MULTIPLIER * baseline_std, MIN_TOLERANCE)
-            threshold = baseline_mean - tolerance
-            regressed = new_val < threshold
+            if pd.isna(new_val):
+                regressed = True
+                tolerance = None
+                threshold = None
+            else:
+                tolerance = max(STD_MULTIPLIER * baseline_std, MIN_TOLERANCE)
+                threshold = baseline_mean - tolerance
+                regressed = new_val < threshold
 
             flags.append({
                 "user_input": row["user_input"][:60] + "...",
