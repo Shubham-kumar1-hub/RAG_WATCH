@@ -44,6 +44,17 @@ def run_full(golden_df):
     )
     return result.to_pandas()
 
+def run_precision_recall_only(golden_df):
+    dataset = build_rows(golden_df)
+    result = evaluate(
+        dataset=dataset,
+        metrics=[LLMContextPrecisionWithReference(), LLMContextRecall()],
+        llm=get_ragas_llm(),
+        embeddings=get_ragas_embeddings(),
+        run_config=RUN_CONFIG,
+    )
+    return result.to_pandas()
+
 if __name__ == "__main__":
     project_root = Path(__file__).resolve().parents[2]
     processed_dir = project_root / "data" / "processed"
@@ -61,7 +72,17 @@ if __name__ == "__main__":
     # df2.to_csv(processed_dir / "eval_run_2.csv", index=False)
     # print(f"Saved run 2 to {processed_dir / 'eval_run_2.csv'}")
 
-    print("=== Run 3 (stochastic only) ===")
-    df3 = run_stochastic_only(golden_df)
-    df3.to_csv(processed_dir / "eval_run_3.csv", index=False)
-    print(f"Saved run 3 to {processed_dir / 'eval_run_3.csv'}")
+    # print("=== Run 3 (stochastic only) ===")
+    # df3 = run_stochastic_only(golden_df)
+    # df3.to_csv(processed_dir / "eval_run_3.csv", index=False)
+    # print(f"Saved run 3 to {processed_dir / 'eval_run_3.csv'}")
+
+    # print("=== Precision/Recall Run 2 ===")
+    # df = run_precision_recall_only(golden_df)
+    # df.to_csv(processed_dir / "eval_run_pr_2.csv", index=False)
+    # print(f"Saved to {processed_dir / 'eval_run_pr_2.csv'}")
+
+    print("=== Precision/Recall Run 3 ===")
+    df = run_precision_recall_only(golden_df)
+    df.to_csv(processed_dir / "eval_run_pr_3.csv", index=False)
+    print(f"Saved to {processed_dir / 'eval_run_pr_3.csv'}")
