@@ -5,15 +5,15 @@ from src.eval.build_baseline import run_full
 
 METRICS = ["faithfulness", "answer_relevancy", "llm_context_precision_with_reference", "context_recall"]
 STD_MULTIPLIER = 1.5
-MIN_TOLERANCE = 0.05  # floor for metrics with baseline_std == 0
+MIN_TOLERANCE = 0.05
 
 def check_regressions(baseline_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
-    merged = new_df.merge(baseline_df, on="user_input", suffixes=("_new", ""))
+    merged = new_df.merge(baseline_df, on="user_input")
 
     flags = []
     for _, row in merged.iterrows():
         for metric in METRICS:
-            new_val = row[f"{metric}_new"]
+            new_val = row[metric]
             baseline_mean = row[f"{metric}_mean"]
             baseline_std = row[f"{metric}_std"]
 
@@ -39,12 +39,17 @@ if __name__ == "__main__":
     golden_df = pd.read_csv(processed_dir / "golden_dataset.csv")
     baseline_df = pd.read_csv(processed_dir / "eval_results_baseline.csv")
 
-    print("Running fresh eval against current pipeline...")
+    print("Running fresh eval against current pipeline (top_k=8)...")
     new_df = run_full(golden_df, top_k=8)
+
+   
+    new_run_path = processed_dir / "eval_run_topk8.csv"
+    new_df.to_csv(new_run_path, index=False)
+    print(f"Saved raw results to {new_run_path}")
 
     report = check_regressions(baseline_df, new_df)
 
-    print("\n--- Regression Report ---")
+    print("\n---- Regression Report ----")
     print(report.to_string())
 
     n_regressed = report["regressed"].sum()
