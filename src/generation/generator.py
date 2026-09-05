@@ -26,6 +26,6 @@ def generate_answer(client: Groq, query: str, context_chunks: list[str]) -> str:
         model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.1,
-        max_tokens=500
+        max_tokens=900,
     )
     return response.choices[0].message.content
