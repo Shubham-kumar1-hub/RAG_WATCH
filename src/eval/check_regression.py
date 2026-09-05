@@ -19,19 +19,19 @@ def check_regressions(baseline_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.Dat
 
             if pd.isna(new_val):
                 regressed = True
-                tolerance = None
-                threshold = None
+                tolerance_display = "N/A"
             else:
                 tolerance = max(STD_MULTIPLIER * baseline_std, MIN_TOLERANCE)
                 threshold = baseline_mean - tolerance
                 regressed = new_val < threshold
+                tolerance_display = round(tolerance, 3)
 
             flags.append({
                 "user_input": row["user_input"][:60] + "...",
                 "metric": metric,
                 "baseline_mean": round(baseline_mean, 3),
-                "tolerance": round(tolerance, 3),
-                "new_value": round(new_val, 3),
+                "tolerance": tolerance_display,
+                "new_value": new_val,
                 "regressed": regressed,
             })
 
@@ -44,17 +44,16 @@ if __name__ == "__main__":
     golden_df = pd.read_csv(processed_dir / "golden_dataset.csv")
     baseline_df = pd.read_csv(processed_dir / "eval_results_baseline.csv")
 
-    print("Running fresh eval against current pipeline (top_k=8)...")
+    print("Running fresh eval against current pipeline (top_k=8, max_tokens=900)...")
     new_df = run_full(golden_df, top_k=8)
 
-   
-    new_run_path = processed_dir / "eval_run_topk8.csv"
+    new_run_path = processed_dir / "eval_run_topk8_v2.csv"
     new_df.to_csv(new_run_path, index=False)
     print(f"Saved raw results to {new_run_path}")
 
     report = check_regressions(baseline_df, new_df)
 
-    print("\n---- Regression Report ----")
+    print("\n=== Regression Report ===")
     print(report.to_string())
 
     n_regressed = report["regressed"].sum()
